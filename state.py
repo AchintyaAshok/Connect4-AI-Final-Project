@@ -1,6 +1,8 @@
 import copy
 from enum import Enum
 
+# NUM_ROWS = 1
+# NUM_COLUMNS = 7
 NUM_ROWS = 4
 NUM_COLUMNS = 5
 
@@ -70,7 +72,6 @@ class State:
 					coordinate = {'x': x, 'y': y}
 					moves.append(coordinate)
 		return moves
-
 
 	def checkForGoalState(self):
 		''' This method checks if the state is in a goal state. It will return a list containing
@@ -233,11 +234,15 @@ class State:
 
 		return [False, Marking.Empty]
 
+	''' Returns a copy of the matrix describing the state of the game ''' 
+	def getMatrix(self):
+		return copy.deepcopy(self.matrix)
+
 	def __str__(self):
 		board = ""
 		for rowIndex in range(NUM_ROWS - 1, -1, -1):
 			rowStr = str(self.matrix[rowIndex])
-			board += rowStr + "\n"
+			board += str(rowIndex) + " " + rowStr + "\n"
 		return board
 
 
