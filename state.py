@@ -14,6 +14,8 @@ class Marking(Enum):
 class State:
 	matrix = []
 	possibleMoves = 0
+	numColumns = 0
+	numRows = 0
 
 	def __init__(self):
 		for x in range(0, NUM_ROWS):
@@ -23,6 +25,14 @@ class State:
 			self.matrix.append(row)
 
 		self.possibleMoves = NUM_COLUMNS*NUM_ROWS
+		self.numColumns = int(NUM_COLUMNS)
+		self.numRows = int(NUM_ROWS)
+
+	def getNumberRows(self):
+		return self.numRows
+
+	def getNumberColumns(self):
+		return self.numColumns
 
 	''' Override of the deep copy constructor for the class. This ensures that references are not made
 	to mutable types inside this class when the deepcopy constructor is invoked. That way the state that

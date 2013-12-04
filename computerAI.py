@@ -80,18 +80,22 @@ class ComputerPlayer:
 						if numUser > 0: # we have an X and an O in the interval, neither player wins
 							numUser = numComp = 0
 							stoppedChecking = True # break out of the loop
-						numComp += 1
-						numUser = 0
+							break
+						else:
+							numComp += 1
+							numUser = 0
 					elif mark == Marking.User:	
 						if numComp > 0: # we have an X and an O in the interval, neither player wins
 							numUser = numComp = 0
-							stoppedChecking = True # break out of the loop	
-						numUser += 1
-						numComp = 0
+							stoppedChecking = True # break out of the loop
+							break	# if we have both user and computer markings in the row, neither can win
+						else:	
+							numUser += 1
+							numComp = 0
 
 				# indicate the number of markings in a row the user or computer accrued (for this section)
 				if not stoppedChecking: 	# if this seciton wasn't stopped check because of X's and O's, 
-									# a player has a chance of winning and we record it
+											# a player has a chance of winning and we record it
 					if numComp > 0:		numConsecutive[numComp - 1] += 1
 					elif numUser > 0: 	numConsecutiveUser[numUser - 1] += 1
 
@@ -100,6 +104,46 @@ class ComputerPlayer:
 				rightPtr += 1
 
 		# CHECK THE COLUMNS
+		for colInd in range(state.numColumns()):
+			# start from the left of the matrix and iterate to the right checking each column
+			topPtr = state.numRows()-1 # start from the top of the column
+			btmPtr = topPtr - 3
 
+			while (topPtr >= 3):
+				# we need at least 4 indicies to check for a 4 in a row
+				numComp = numUser = 0
+				stoppedChecking = False
+				for i in range(4):
+					# check each of the marks in our 4 elements from top to bottom
+					mark = matrix[colInd][topPtr - i]
+					if mark == Marking.Computer:
+						if numUser > 0:
+							numUser = numComp = 0
+							stoppedChecking = True
+							break
+						else:
+							numComp += 1
+					elif mark == Marking.User:
+						if numComp > 0:
+							numComp = numUser = 0
+							stoppedChecking = True
+							break
+						else:
+							numUser += 1
+
+				if not stoppedChecking:
+					# if we weren't prematurely halted when checking our 4 element range because
+					# there are both user and computer markings, we update our arrays with the
+					# number of consecutive markings that exist in that row for either user
+					if numComp > 0:		numConsecutive[numComp - 1] += 1
+					elif numUser > 0:	numConsecutiveUser[numUser - 1] += 1
+
+				topPtr -= 1
+				btmPtr -= 1
+
+			# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
+
+
+			
 
 

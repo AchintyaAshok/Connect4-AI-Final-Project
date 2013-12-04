@@ -95,6 +95,107 @@ def utility(state):
 		else:
 			return 0 # the game has ended and it's a draw
 	
+	matrix = state.getMatrix()	# get a copy of the state's matrix, so that we don't modify it
+
+	numConsecutive = [0, 0, 0] # we can have up to 3 in a row. 4 in a row and the state has already ended.
+	numConsecutiveUser = [0, 0, 0]
+
+	# CHECK THE ROWS
+	# consecutively checks a 4 element range of markings to see if any patterns can be made. It iterates
+	# through rows in the matrix.
+	for colInd in range(len(matrix)):
+		# keep track of elements between a range of 4. We see what combinations can be made between them.
+		leftPtr = 0
+		rightPtr = 3
+		while (rightPtr < len(matrix[colInd])):
+			numComp = numUser = 0
+			stoppedChecking = False
+			for i in range(4):
+			# start at the left pointer and iterate to the right
+				if stoppedChecking:	break
+				mark = matrix[colInd][leftPtr + i]
+				if mark == Marking.Computer:
+					if numUser > 0: # we have an X and an O in the interval, neither player wins
+						numUser = numComp = 0
+						stoppedChecking = True # break out of the loop
+						break
+					else:
+						numComp += 1
+						numUser = 0
+				elif mark == Marking.User:	
+					if numComp > 0: # we have an X and an O in the interval, neither player wins
+						numUser = numComp = 0
+						stoppedChecking = True # break out of the loop
+						break	# if we have both user and computer markings in the row, neither can win
+					else:	
+						numUser += 1
+						numComp = 0
+
+			# indicate the number of markings in a row the user or computer accrued (for this section)
+			if not stoppedChecking: 	# if this seciton wasn't stopped check because of X's and O's, 
+										# a player has a chance of winning and we record it
+				if numComp > 0:		numConsecutive[numComp - 1] += 1
+				elif numUser > 0: 	numConsecutiveUser[numUser - 1] += 1
+
+			# check next 4 consecutive spots, shift the interval rightwards
+			leftPtr += 1
+			rightPtr += 1
+
+	# CHECK THE COLUMNS
+	for colInd in range(state.getNumberColumns()):
+	# start from the left of the matrix and iterate to the right checking each column
+		topPtr = state.getNumberRows() - 1 # start from the top of the column
+		btmPtr = topPtr - 3
+
+		while (topPtr >= 3):
+			# we need at least 4 indicies to check for a 4 in a row
+			numComp = numUser = 0
+			stoppedChecking = False
+			for i in range(4):
+				# check each of the marks in our 4 elements from top to bottom
+				mark = matrix[topPtr - i][colInd]
+				print "column", colInd, "saw this-> ", mark
+				if mark == Marking.Computer:
+					if numUser > 0:
+						numUser = numComp = 0
+						stoppedChecking = True
+						break
+					else:
+						numComp += 1
+				elif mark == Marking.User:
+					if numComp > 0:
+						numComp = numUser = 0
+						stoppedChecking = True
+						break
+					else:
+						numUser += 1
+
+			if not stoppedChecking:
+				# if we weren't prematurely halted when checking our 4 element range because
+				# there are both user and computer markings, we update our arrays with the
+				# number of consecutive markings that exist in that row for either user
+				print "someone got some score!"
+				if numComp > 0:		numConsecutive[numComp - 1] += 1
+				elif numUser > 0:	numConsecutiveUser[numUser - 1] += 1
+
+			topPtr -= 1
+			btmPtr -= 1
+
+		# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
+	print "User Score => ", numConsecutiveUser
+	print "Comp Score => ", numConsecutive
+
+
+def utility2(state):
+	ended = state.checkForGoalState()
+	if ended[0]: 
+		if ended[1] == Marking.Computer: # if the game has ended & the computer has won
+			return sys.maxint 			# our simulated +infinity
+		elif ended[1] == Marking.User:
+			return (-1 * sys.maxint) 	# simulated -infinity
+		else:
+			return 0 # the game has ended and it's a draw
+	
 	matrix = state.getMatrix()
 	# rows, columns, diagonals that have x*, o* without any of the opposing markings
 	x1, x2, x3, o1, o2, o3 = 0, 0, 0, 0, 0, 0
@@ -143,16 +244,20 @@ def utility(state):
 
 
 def main():
-	# s = State()
-	# print s
-	# s.addMarking(Marking.User, 0, 0)
-	# s.addMarking(Marking.User, 1, 0)
-	# s.addMarking(Marking.User, 2, 0)
-	# s.addMarking(Marking.Computer, 4, 0)
-	# s.addMarking(Marking.Computer, 5, 0)
-	# s.addMarking(Marking.Computer, 6, 0)
-	# print s
-	# utility(s)
+	s = State()
+	print s
+	s.addMarking(Marking.User, 0, 0)
+	s.addMarking(Marking.User, 1, 0)
+	s.addMarking(Marking.User, 2, 0)
+	s.addMarking(Marking.Computer, 3, 0)
+	s.addMarking(Marking.Computer, 4, 0)
+	s.addMarking(Marking.User, 0, 1)
+	s.addMarking(Marking.User, 1, 1)
+	s.addMarking(Marking.User, 2, 1)
+	s.addMarking(Marking.User, 4, 1)
+	s.addMarking(Marking.User, 0, 3)
+	print s
+	utility(s)
 
 	# s2 = State()
 	# print s2
@@ -163,9 +268,9 @@ def main():
 	# print s2
 	# utility(s2)
 
-	play_game()
-	newState = State()
-	print newState
+	# play_game()
+	# newState = State()
+	# print newState
 
 	# -- testing horizontal check
 	# newState.addMarking(Marking.Computer, 0, 0)
@@ -191,13 +296,13 @@ def main():
 	# newState.addMarking(Marking.Computer, 3, 0)
 
 	# Testing Diagonals 2
-	newState.addMarking(Marking.User, 0, 0)
-	newState.addMarking(Marking.User, 1, 1)
-	newState.addMarking(Marking.User, 3, 1)
-	newState.addMarking(Marking.Computer, 1, 0)
-	newState.addMarking(Marking.Computer, 2, 0)
-	newState.addMarking(Marking.Computer, 4, 3)
-	newState.checkForGoalState()
-	print newState
+	# newState.addMarking(Marking.User, 0, 0)
+	# newState.addMarking(Marking.User, 1, 1)
+	# newState.addMarking(Marking.User, 3, 1)
+	# newState.addMarking(Marking.Computer, 1, 0)
+	# newState.addMarking(Marking.Computer, 2, 0)
+	# newState.addMarking(Marking.Computer, 4, 3)
+	# newState.checkForGoalState()
+	# print newState
 
 main()	
