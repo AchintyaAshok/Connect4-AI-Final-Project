@@ -9,14 +9,17 @@ class ComputerPlayer:
 
 	def __init__(self):
 		print "Constructing the AI!"
+		self.maxPlayer = Marking.ComputerPlayer	# we are trying to maximize the utility of the computer
+		self.minPlayer = Marking.User
 
 	''' This method make the computer calculate a move that it wishes to perform_move
 	given a board configuration. The method returns the next state of the board once the
 	computer has made a move. ''' 
 	def perform_move(self, currentState):
 		state = copy.deepcopy(currentState) # do not modify the original state
-		moveCoordinates = self.__minimaxDecision(state)
-		state.addMarking(Marking.Computer, moveCoordinates['x'], moveCoordinates['y'])
+		print "Old Utility: ", self.__getUtility(state)
+		bestMove = self.__minimaxDecision(state)
+		state.addMarking(Marking.Computer, bestMove)
 		print "New Utility: ", self.__getUtility(state)
 		return state
 
@@ -37,6 +40,18 @@ class ComputerPlayer:
 
 		# return the best move we can make assuming the opponent is minimizing your utility:
 		# apply all the actions to the state, return the one that gives you the highest utility
+		playableMoves = initialState.getAllPossibleMoves()
+		bestMove = None
+		highestUtil = -1 * sys.maxint
+		for move in playableMoves:
+			nextPossibleState = copy.deepcopy(initialState)
+			nextPossibleState.addMarking(Marking.Computer, move)	# the computer is the max player
+			currUtil = self.__minimum(nextPossibleState)
+			if currUtil > highestUtil:
+				bestMove = move
+				highestUtil = currUtil
+
+		return bestMove
 
 	def __minimum(self, state, alpha = None, beta = None):
 		print "finding min"
@@ -56,8 +71,8 @@ class ComputerPlayer:
 		playableMoves = state.getAllPossibleMoves()
 		for move in playableMoves:
 			newState = copy.deepcopy(state)
-			newState.addMarking(move)
-			util = self.__minimum(newState)
+			newState.addMarking(self.minPlayer, move)	# perform the move for the min player, the user
+			util = self.__maximum(newState)
 			if util < v:	v = util
 				#stateToReturn = newState
 
@@ -82,7 +97,7 @@ class ComputerPlayer:
 		playableMoves = state.getAllPossibleMoves()
 		for move in playableMoves:
 			newState = copy.deepcopy(state)
-			newState.addMarking(move)
+			newState.addMarking(self.maxPlayer, move)	# perform the move for the computer
 			util = self.__minimum(newState)
 			if util > v:	v = util
 				#stateToReturn = newState
