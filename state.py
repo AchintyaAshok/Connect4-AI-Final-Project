@@ -61,6 +61,12 @@ class State:
 		self.possibleMoves -= 1
 		return True # indicate that the move was sucessfully made
 
+	''' Accepts a hash containing the location '''
+	def addMarking(self, mark, locationHash):
+		x = locationHash['x']
+		y = locationHash['y']
+		return self.addMarking(mark, x, y)
+
 	''' Returns whether a space on the Grid is occupied. If the space is occupied by a move (the User's
 		or the Computer), the method will return True. If the space is unoccupied or the move is invalid
 		because of out-of-range coordinates, the method returns False.'''
@@ -140,7 +146,6 @@ class State:
 	def __checkVertical(self):
 		#print "checking vertical"
 		# check each column vector
-
 		for colIndex in range(self.numColumns):
 			rowIndex = self.numRows - 1
 			if rowIndex < 3:	break
@@ -176,30 +181,6 @@ class State:
 						return [True, Marking.Computer]
 
 				rowIndex -= 1
-
-		# columnIndex = 0
-		# while columnIndex < NUM_COLUMNS:
-		# 	for row in self.matrix:
-		# 		mark = row[columnIndex] # get the mark in that given column, row 
-		# 		if mark == Marking.User:
-		# 			numbUser += 1
-		# 			numbComp = 0
-		# 		elif mark == Marking.Computer:
-		# 			numbComp += 1
-		# 			numbUser = 0
-		# 		else:
-		# 			numbUser = numbComp = 0
-		# 	# check if at the end of the loop, we found any column with 4 X's or 4 O's		
-		# 	if numbUser >= 4:
-		# 		print "User wins in column ", columnIndex
-		# 		return [True, Marking.User]
-		# 	elif numbComp >= 4:
-		# 		print "Computer wins in column", columnIndex
-		# 		return [True, Marking.Computer]
-
-		# 	# reset our X and O counters for the next column 
-		# 	numbUser = numbComp = 0
-		# 	columnIndex += 1
 
 		return [False, Marking.Empty]
 

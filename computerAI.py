@@ -26,20 +26,69 @@ class ComputerPlayer:
 	If alpha and beta values are provided, it will compute a decision using the alpha-beta algorithm.'''
 	def __minimaxDecision(self, initialState):
 		# returns the action that needs to be performed. A set of coordinates.
-		utility = self.__getUtility(initialState)
-		print "Original Utility: ", utility
+		# utility = self.__getUtility(initialState)
+		# print "Original Utility: ", utility
 
-		# let's randomly pick a move to make for testing purposes:
-		possible = initialState.getAllPossibleMoves()
-		moveToMake = possible[random.randint(0, len(possible)-1)]
-		print "Will play this move: ", moveToMake
-		return moveToMake
+		# # let's randomly pick a move to make for testing purposes:
+		# possible = initialState.getAllPossibleMoves()
+		# moveToMake = possible[random.randint(0, len(possible)-1)]
+		# print "Will play this move: ", moveToMake
+		# return moveToMake
+
+		# return the best move we can make assuming the opponent is minimizing your utility:
+		# apply all the actions to the state, return the one that gives you the highest utility
 
 	def __minimum(self, state, alpha = None, beta = None):
-		print "min"
+		print "finding min"
+		goalCheck = state.checkForGoalState()
+		# terminal test
+		if goalCheck[0]:
+			if goalCheck[1] == Marking.Computer:
+				return sys.maxint
+			elif goalCheck[1] == Marking.User:
+				return -1*sys.maxint
+			else:
+				return 0
+
+		v = sys.maxint
+		#stateToReturn = None
+		# apply each action to the state that is possible and find the maximum of that
+		playableMoves = state.getAllPossibleMoves()
+		for move in playableMoves:
+			newState = copy.deepcopy(state)
+			newState.addMarking(move)
+			util = self.__minimum(newState)
+			if util < v:	v = util
+				#stateToReturn = newState
+
+		return v
+		#return stateToReturn
 
 	def __maximum(self, state, alpha = None, beta = None):
-		print "max"
+		print "finding max"
+		goalCheck = state.checkForGoalState()
+		# terminal test
+		if goalCheck[0]:
+			if goalCheck[1] == Marking.Computer:
+				return sys.maxint
+			elif goalCheck[1] == Marking.User:
+				return -1*sys.maxint
+			else:
+				return 0
+
+		v = -1 * sys.maxint
+		#stateToReturn = None
+		# apply each action to the state that is possible and find the maximum of that
+		playableMoves = state.getAllPossibleMoves()
+		for move in playableMoves:
+			newState = copy.deepcopy(state)
+			newState.addMarking(move)
+			util = self.__minimum(newState)
+			if util > v:	v = util
+				#stateToReturn = newState
+
+		return v
+		#return stateToReturn
 
 	''' This method returns the utility from the perspective of the computer, given a state. 
 	The utility for a terminal winning state is +infinity. The utility for a losing terminal state
@@ -54,7 +103,7 @@ class ComputerPlayer:
 
 	For example, X O O O _ X -> in this row, we can place another O to win the game.
 	If it is like this, O O O X X X, there is no purpose in counting the 3 O's, there is no way to win.
-
+	Returns a Utility value for a state from the Computer's Perspective
 	'''
 	def __getUtility(self, state):
 		ended = state.checkForGoalState()
