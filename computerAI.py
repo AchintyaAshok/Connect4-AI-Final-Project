@@ -1,6 +1,7 @@
 from state import *
 import copy
 import sys
+import random
 
 
 class ComputerPlayer:
@@ -14,8 +15,9 @@ class ComputerPlayer:
 	computer has made a move. ''' 
 	def perform_move(self, currentState):
 		state = copy.deepcopy(currentState) # do not modify the original state
-		moveCoordinates = self.__computeMinimaxDecision(state)
+		moveCoordinates = self.__minimaxDecision(state)
 		state.addMarking(Marking.Computer, moveCoordinates['x'], moveCoordinates['y'])
+		print "New Utility: ", self.__getUtility(state)
 		return state
 
 	''' Given an initial state of the board configuration, this computes the action (a 
@@ -24,7 +26,14 @@ class ComputerPlayer:
 	If alpha and beta values are provided, it will compute a decision using the alpha-beta algorithm.'''
 	def __minimaxDecision(self, initialState):
 		# returns the action that needs to be performed. A set of coordinates.
-		print "doing minimax"
+		utility = self.__getUtility(initialState)
+		print "Original Utility: ", utility
+
+		# let's randomly pick a move to make for testing purposes:
+		possible = initialState.getAllPossibleMoves()
+		moveToMake = possible[random.randint(0, len(possible)-1)]
+		print "Will play this move: ", moveToMake
+		return moveToMake
 
 	def __minimum(self, state, alpha = None, beta = None):
 		print "min"
@@ -104,9 +113,9 @@ class ComputerPlayer:
 				rightPtr += 1
 
 		# CHECK THE COLUMNS
-		for colInd in range(state.numColumns()):
+		for colInd in range(state.getNumberColumns()):
 			# start from the left of the matrix and iterate to the right checking each column
-			topPtr = state.numRows()-1 # start from the top of the column
+			topPtr = state.getNumberRows()-1 # start from the top of the column
 			btmPtr = topPtr - 3
 
 			while (topPtr >= 3):
@@ -143,7 +152,80 @@ class ComputerPlayer:
 
 			# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
 
+		# CHECK THE DIAGONALS
+		for rowInd in range(state.getNumberRows()-1, -1, -1):
+			# start from the topmost row and work our way down
+			# keep track of left and right pointers because we check from either corner of the row
+			
+			if rowInd < 3:	break # we need at least 4 elements of height for the diagonal
 
+			leftPtr = 0
+			rightPtr = len(matrix[rowInd]) - 1 # start from the right end of the row
+
+			while (state.getNumberColumns() - 1 - leftPtr >= 3):
+				# we need to have at least 4 columns for our diagonal to be 4 elements in width
+				# thus, we stop when we have less than 4
+				# move our left pointer rightwards and our right pointer leftwards in the row
+				stoppedCheckingLeft = stoppedCheckingRight = False # if we have X and O in our diagonal, don't count it
+				numUserLeft = numUserRight = numCompLeft = numCompRight = 0	# number of X's and O's in the diagonals
+				#print "starting at row ", rowInd, "left column => ", leftPtr, "right column => ", rightPtr
+				for i in range(4):
+					leftYPos = rowInd - i
+					rightYPos = rowInd - i
+					# check the left
+					leftElem = matrix[leftYPos][leftPtr + i]
+					if leftElem == Marking.Computer:
+						if numUserLeft > 0:
+							numUserLeft = numCompLeft = 0
+							stoppedCheckingLeft = True
+						else:
+							numCompLeft += 1
+					elif leftElem == Marking.User:
+						if numCompLeft > 0:
+							numUserLeft = numCompLeft = 0
+							stoppedCheckingLeft = True
+						else:
+							numUserLeft += 1
+
+					rightElem = matrix[rightYPos][rightPtr - i]
+					if rightElem == Marking.Computer:
+						if numUserRight > 0:
+							numUserRight = numCompRight = 0
+							stoppedCheckingRight = True
+						else:
+							numCompRight += 1
+					elif rightElem == Marking.User:
+						if numCompRight > 0:
+							numUserRight = numCompRight = 0
+							stoppedCheckingRight = True
+						else:
+							numUserRight += 1
+
+					#print "Left Elem: ", leftElem, "Right Elem: ", rightElem
+
+					if stoppedCheckingLeft and stoppedCheckingRight:	break	# if we're checking neither loop, stop
+				
+				if not stoppedCheckingLeft:
+					#print "adding some left thing!"
+					if numCompLeft > 0:		numConsecutive[numCompLeft - 1] += 1
+					elif numUserLeft > 0:	numConsecutiveUser[numUserLeft - 1] += 1
+				if not stoppedCheckingRight:
+					#print "adding some right thing!"
+					if numCompRight > 0:	numConsecutive[numCompRight - 1] += 1
+					elif numUserRight > 0:	numConsecutiveUser[numUserRight - 1] += 1
+
+				leftPtr += 1
+				rightPtr -= 1
+
+
+			# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
 			
 
+		# now we calculate our utility using our evaluation function
+		stateUtil = 0
+		for i in range(len(numConsecutive)):
+			stateUtil += (i+1) * numConsecutive[i]
+			stateUtil -= (i+1) * numConsecutiveUser[i]
 
+		#print "Utility of State", stateUtil
+		return stateUtil

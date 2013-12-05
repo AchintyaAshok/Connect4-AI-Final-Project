@@ -50,6 +50,17 @@ def play_game():
 	while(True):
 		print "=== Round ", numberOfMoves, " ==="
 		print currentState
+
+		testGoalState = currentState.checkForGoalState() # check to see if we've reached a goal state
+		if testGoalState[0]:
+			print "The Game is finished!"
+			if testGoalState[1] == Marking.User:	print "You Won!"
+			else:									print "The Computer Won!"
+			break
+		elif currentState.numberOfPossibleMoves() == 0:	# check to see if it's a draw
+			print "The Game resulted in a draw! There is no winner."
+			break
+
 		if isUserTurn:
 			# it is the User's turn, so we perform his/her move
 			print "--USER TURN--"
@@ -66,23 +77,13 @@ def play_game():
 			currentState = nextState
 			isUserTurn = True
 
-		testGoalState = currentState.checkForGoalState() # check to see if we've reached a goal state
-		if testGoalState[0]:
-			print "The Game is finished!"
-			if testGoalState[1] == Marking.User:	print "You Won!"
-			else:									print "The Computer Won!"
-			break
-		elif currentState.numberOfPossibleMoves() == 0:	# check to see if it's a draw
-			print "The Game resulted in a draw! There is no winner."
-			break
-
 		numberOfMoves += 1
 		# control-test, remove this 
-		if numberOfMoves > 4: break
+		#if numberOfMoves > 4: break
 
-	print "States in Succession:\n"
-	for i in range(len(states)):
-		print (i+1), "->\n", states[i]
+	# print "States in Succession:\n"
+	# for i in range(len(states)):
+	# 	print (i+1), "->\n", states[i]
 
 
 def utility(state):
@@ -181,9 +182,85 @@ def utility(state):
 			topPtr -= 1
 			btmPtr -= 1
 
+
+	# CHECK DIAGONAL
+	for rowInd in range(state.getNumberRows()-1, -1, -1):
+		# start from the topmost row and work our way down
+		# keep track of left and right pointers because we check from either corner of the row
+		
+		if rowInd < 3:	break # we need at least 4 elements of height for the diagonal
+
+		leftPtr = 0
+		rightPtr = len(matrix[rowInd]) - 1 # start from the right end of the row
+
+		while (state.getNumberColumns() - 1 - leftPtr >= 3):
+			# we need to have at least 4 columns for our diagonal to be 4 elements in width
+			# thus, we stop when we have less than 4
+			# move our left pointer rightwards and our right pointer leftwards in the row
+			stoppedCheckingLeft = stoppedCheckingRight = False # if we have X and O in our diagonal, don't count it
+			numUserLeft = numUserRight = numCompLeft = numCompRight = 0	# number of X's and O's in the diagonals
+			print "starting at row ", rowInd, "left column => ", leftPtr, "right column => ", rightPtr
+			for i in range(4):
+				leftYPos = rowInd - i
+				rightYPos = rowInd - i
+				# check the left
+				leftElem = matrix[leftYPos][leftPtr + i]
+				if leftElem == Marking.Computer:
+					if numUserLeft > 0:
+						numUserLeft = numCompLeft = 0
+						stoppedCheckingLeft = True
+					else:
+						numCompLeft += 1
+				elif leftElem == Marking.User:
+					if numCompLeft > 0:
+						numUserLeft = numCompLeft = 0
+						stoppedCheckingLeft = True
+					else:
+						numUserLeft += 1
+
+				rightElem = matrix[rightYPos][rightPtr - i]
+				if rightElem == Marking.Computer:
+					if numUserRight > 0:
+						numUserRight = numCompRight = 0
+						stoppedCheckingRight = True
+					else:
+						numCompRight += 1
+				elif rightElem == Marking.User:
+					if numCompRight > 0:
+						numUserRight = numCompRight = 0
+						stoppedCheckingRight = True
+					else:
+						numUserRight += 1
+
+				print "Left Elem: ", leftElem, "Right Elem: ", rightElem
+
+				if stoppedCheckingLeft and stoppedCheckingRight:	break	# if we're checking neither loop, stop
+			
+			if not stoppedCheckingLeft:
+				print "adding some left thing!"
+				if numCompLeft > 0:		numConsecutive[numCompLeft - 1] += 1
+				elif numUserLeft > 0:	numConsecutiveUser[numUserLeft - 1] += 1
+			if not stoppedCheckingRight:
+				print "adding some right thing!"
+				if numCompRight > 0:	numConsecutive[numCompRight - 1] += 1
+				elif numUserRight > 0:	numConsecutiveUser[numUserRight - 1] += 1
+
+			leftPtr += 1
+			rightPtr -= 1
+
+
 		# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
+	
 	print "User Score => ", numConsecutiveUser
 	print "Comp Score => ", numConsecutive
+
+	# now we calculate our utility using our evaluation function
+	stateUtil = 0
+	for i in range(len(numConsecutive)):
+		stateUtil += (i+1) * numConsecutive[i]
+		stateUtil -= (i+1) * numConsecutiveUser[i]
+
+	print "Utility of State", stateUtil
 
 
 def utility2(state):
@@ -246,18 +323,26 @@ def utility2(state):
 def main():
 	s = State()
 	print s
-	s.addMarking(Marking.User, 0, 0)
-	s.addMarking(Marking.User, 1, 0)
+	# s.addMarking(Marking.Computer, 0, 0)
+	# s.addMarking(Marking.Computer, 1, 0)
+	# s.addMarking(Marking.User, 2, 0)
+	# s.addMarking(Marking.User, 3, 0)
+	# s.addMarking(Marking.Computer, 4, 0)
+	# s.addMarking(Marking.Computer, 0, 1)
+	# s.addMarking(Marking.Computer, 1, 1)
+	# s.addMarking(Marking.Computer, 2, 1)
+	# s.addMarking(Marking.Computer, 4, 1)
+	# s.addMarking(Marking.Computer, 0, 3)
+	#print s
+	#utility(s)
+	s.addMarking(Marking.Computer, 0, 0)
+	s.addMarking(Marking.Computer, 1, 0)
 	s.addMarking(Marking.User, 2, 0)
-	s.addMarking(Marking.Computer, 3, 0)
+	s.addMarking(Marking.User, 3, 0)
 	s.addMarking(Marking.Computer, 4, 0)
-	s.addMarking(Marking.User, 0, 1)
-	s.addMarking(Marking.User, 1, 1)
-	s.addMarking(Marking.User, 2, 1)
-	s.addMarking(Marking.User, 4, 1)
-	s.addMarking(Marking.User, 0, 3)
-	print s
-	utility(s)
+	s.addMarking(Marking.Computer, 0, 1)
+	s.addMarking(Marking.User, 3, 3)
+	play_game()
 
 	# s2 = State()
 	# print s2

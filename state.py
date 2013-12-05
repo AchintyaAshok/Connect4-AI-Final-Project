@@ -76,9 +76,9 @@ class State:
 	''' Returns a list of all the possible coordinates that a move can be played on. '''
 	def getAllPossibleMoves(self):
 		moves = []
-		for y in range(len(self.matrix)):
-			for x in range(len(self.matrix[y])):
-				if row[i] == Marking.Empty:
+		for y in range(self.numRows):
+			for x in range(self.numColumns):
+				if self.matrix[y][x] == Marking.Empty:
 					coordinate = {'x': x, 'y': y}
 					moves.append(coordinate)
 		return moves
@@ -108,7 +108,7 @@ class State:
 		return [False, Marking.Empty]
 
 	def __checkHorizontal(self):
-		print "checking horizontal"
+		#print "checking horizontal"
 		numbX = 0 # keep track of the number of consecutives X's
 		numbO = 0 # number of consecutives O's
 		for row in self.matrix:
@@ -138,39 +138,73 @@ class State:
 		return [False, Marking.Empty]	# no four in a row were found
 
 	def __checkVertical(self):
-		print "checking vertical"
+		#print "checking vertical"
 		# check each column vector
-		numbX = 0
-		numbO = 0
-		columnIndex = 0
-		while columnIndex < NUM_COLUMNS:
-			for row in self.matrix:
-				mark = row[columnIndex] # get the mark in that given column, row 
-				if mark == Marking.User:
-					numbX += 1
-					numbO = 0
-				elif mark == Marking.Computer:
-					numbO += 1
-					numbX = 0
-				else:
-					numbX = numbO = 0
-				#print "numb-x: " + str(numbX) + "\tnumb-o: " + str(numbO)
-			# check if at the end of the loop, we found any column with 4 X's or 4 O's		
-			if numbX >= 4:
-				#print "Found 4 X's in a column!"
-				return [True, Marking.User]
-			elif numbO >= 4:
-				#print "Found 4 O's in a column!"
-				return [True, Marking.Computer]
 
-			# reset our X and O counters for the next column 
-			numbX = numbO = 0
-			columnIndex += 1
+		for colIndex in range(self.numColumns):
+			rowIndex = self.numRows - 1
+			if rowIndex < 3:	break
+
+			while rowIndex >= 3:	
+				stoppedCheckingColumn = False
+				numUser = numComp = 0
+
+				for i in range(4):
+					# we need at least 4 elements to check
+					mark = self.matrix[rowIndex - i][colIndex]
+					if mark == Marking.User:
+						if numComp > 0:
+							numUser = numComp = 0
+							stopCheckingColumn = True
+							break
+						else:
+							numUser += 1
+					elif mark == Marking.Computer:
+						if numUser > 0:
+							numComp = numUser = 0
+							stopCheckingColumn = True
+							break
+						else:
+							numComp += 1
+
+				if not stoppedCheckingColumn:
+					if numUser == 4:
+						print "User wins in column ", colIndex
+						return [True, Marking.User]
+					elif numComp == 4:
+						print "Computer wins in column", colIndex
+						return [True, Marking.Computer]
+
+				rowIndex -= 1
+
+		# columnIndex = 0
+		# while columnIndex < NUM_COLUMNS:
+		# 	for row in self.matrix:
+		# 		mark = row[columnIndex] # get the mark in that given column, row 
+		# 		if mark == Marking.User:
+		# 			numbUser += 1
+		# 			numbComp = 0
+		# 		elif mark == Marking.Computer:
+		# 			numbComp += 1
+		# 			numbUser = 0
+		# 		else:
+		# 			numbUser = numbComp = 0
+		# 	# check if at the end of the loop, we found any column with 4 X's or 4 O's		
+		# 	if numbUser >= 4:
+		# 		print "User wins in column ", columnIndex
+		# 		return [True, Marking.User]
+		# 	elif numbComp >= 4:
+		# 		print "Computer wins in column", columnIndex
+		# 		return [True, Marking.Computer]
+
+		# 	# reset our X and O counters for the next column 
+		# 	numbUser = numbComp = 0
+		# 	columnIndex += 1
 
 		return [False, Marking.Empty]
 
 	def __checkDiagonal(self):
-		print "checking diagonal"
+		#print "checking diagonal"
 		# for diagonal checks, we only need to begin checking at y positions that are greater
 		# than or equal to 4, because we need to descend diagonally that amount to find a goal
 		# Example: 	X - - - - 
