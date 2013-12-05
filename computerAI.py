@@ -9,8 +9,10 @@ class ComputerPlayer:
 
 	def __init__(self):
 		print "Constructing the AI!"
-		self.maxPlayer = Marking.ComputerPlayer	# we are trying to maximize the utility of the computer
+		self.maxPlayer = Marking.Computer	# we are trying to maximize the utility of the computer
 		self.minPlayer = Marking.User
+		self.maxComputationDepth = 4
+		self.movesCalculated = 0
 
 	''' This method make the computer calculate a move that it wishes to perform_move
 	given a board configuration. The method returns the next state of the board once the
@@ -19,7 +21,7 @@ class ComputerPlayer:
 		state = copy.deepcopy(currentState) # do not modify the original state
 		print "Old Utility: ", self.__getUtility(state)
 		bestMove = self.__minimaxDecision(state)
-		state.addMarking(Marking.Computer, bestMove)
+		state.addMarkingWithHash(Marking.Computer, bestMove)
 		print "New Utility: ", self.__getUtility(state)
 		return state
 
@@ -28,33 +30,32 @@ class ComputerPlayer:
 	desired coordinate pair. This method will use the minimax algorithm to compute the decision.
 	If alpha and beta values are provided, it will compute a decision using the alpha-beta algorithm.'''
 	def __minimaxDecision(self, initialState):
-		# returns the action that needs to be performed. A set of coordinates.
-		# utility = self.__getUtility(initialState)
-		# print "Original Utility: ", utility
-
-		# # let's randomly pick a move to make for testing purposes:
-		# possible = initialState.getAllPossibleMoves()
-		# moveToMake = possible[random.randint(0, len(possible)-1)]
-		# print "Will play this move: ", moveToMake
-		# return moveToMake
-
 		# return the best move we can make assuming the opponent is minimizing your utility:
 		# apply all the actions to the state, return the one that gives you the highest utility
+		self.movesCalculated = 0
 		playableMoves = initialState.getAllPossibleMoves()
 		bestMove = None
 		highestUtil = -1 * sys.maxint
 		for move in playableMoves:
+			#self.movesCalculated += 1
 			nextPossibleState = copy.deepcopy(initialState)
-			nextPossibleState.addMarking(Marking.Computer, move)	# the computer is the max player
-			currUtil = self.__minimum(nextPossibleState)
+			nextPossibleState.addMarkingWithHash(Marking.Computer, move)	# the computer is the max player
+			currUtil = self.__minimum(nextPossibleState, 0, sys.maxint * -1, sys.maxint)
+			#currUtil = self.__minimum(nextPossibleState, 0)
 			if currUtil > highestUtil:
 				bestMove = move
 				highestUtil = currUtil
 
 		return bestMove
 
-	def __minimum(self, state, alpha = None, beta = None):
-		print "finding min"
+	def __minimum(self, state, depth, alpha = None, beta = None):
+		#print "l:", depth, "move: ", self.movesCalculated
+		if depth + 1 > self.maxComputationDepth:
+			return self.__getUtility(state)
+		if self.movesCalculated == 50000:
+			self.movesCalculated -= 1
+			return self.__getUtility(state)
+
 		goalCheck = state.checkForGoalState()
 		# terminal test
 		if goalCheck[0]:
@@ -66,21 +67,33 @@ class ComputerPlayer:
 				return 0
 
 		v = sys.maxint
-		#stateToReturn = None
 		# apply each action to the state that is possible and find the maximum of that
 		playableMoves = state.getAllPossibleMoves()
 		for move in playableMoves:
+			self.movesCalculated += 1
+			if self.movesCalculated%10000 == 0:
+				print "Moves Calculated ->", self.movesCalculated
 			newState = copy.deepcopy(state)
-			newState.addMarking(self.minPlayer, move)	# perform the move for the min player, the user
-			util = self.__maximum(newState)
-			if util < v:	v = util
-				#stateToReturn = newState
+			newState.addMarkingWithHash(self.minPlayer, move)	# perform the move for the min player, the user
+			util = self.__maximum(newState, depth + 1, alpha, beta)
+			if alpha is not None and util < alpha:
+				v = util
+				#print "min::pruning tree"
+				return v
+			if util < v:	
+				v = util
+			if beta is not None:	beta = min(beta, v)
 
 		return v
-		#return stateToReturn
 
-	def __maximum(self, state, alpha = None, beta = None):
-		print "finding max"
+	def __maximum(self, state, depth, alpha = None, beta = None):
+		#print "h:", depth, "move: ", self.movesCalculated
+		if depth + 1 > self.maxComputationDepth:
+			return self.__getUtility(state)
+		if self.movesCalculated == 50000:
+			self.movesCalculated -= 1
+			return self.__getUtility(state)
+
 		goalCheck = state.checkForGoalState()
 		# terminal test
 		if goalCheck[0]:
@@ -92,18 +105,24 @@ class ComputerPlayer:
 				return 0
 
 		v = -1 * sys.maxint
-		#stateToReturn = None
 		# apply each action to the state that is possible and find the maximum of that
 		playableMoves = state.getAllPossibleMoves()
 		for move in playableMoves:
+			self.movesCalculated += 1
+			if self.movesCalculated%10000 == 0:
+				print "Moves Calculated ->", self.movesCalculated
 			newState = copy.deepcopy(state)
-			newState.addMarking(self.maxPlayer, move)	# perform the move for the computer
-			util = self.__minimum(newState)
-			if util > v:	v = util
-				#stateToReturn = newState
+			newState.addMarkingWithHash(self.maxPlayer, move)	# perform the move for the computer
+			util = self.__minimum(newState, depth + 1, alpha, beta)
+			if beta is not None and util > beta:
+				v = util
+				#print "max::pruning tree"
+				return v
+			if util > v:	
+				v = util
+			if alpha is not None:	alpha = max(alpha, v)
 
 		return v
-		#return stateToReturn
 
 	''' This method returns the utility from the perspective of the computer, given a state. 
 	The utility for a terminal winning state is +infinity. The utility for a losing terminal state

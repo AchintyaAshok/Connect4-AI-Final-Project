@@ -1,8 +1,8 @@
 import copy
 from enum import Enum
 
-# NUM_ROWS = 1
-# NUM_COLUMNS = 7
+# NUM_ROWS = 4
+# NUM_COLUMNS = 4
 NUM_ROWS = 4
 NUM_COLUMNS = 5
 
@@ -62,7 +62,7 @@ class State:
 		return True # indicate that the move was sucessfully made
 
 	''' Accepts a hash containing the location '''
-	def addMarking(self, mark, locationHash):
+	def addMarkingWithHash(self, mark, locationHash):
 		x = locationHash['x']
 		y = locationHash['y']
 		return self.addMarking(mark, x, y)
@@ -100,15 +100,15 @@ class State:
 		# we need to check for horizontal, diagonal and vertical goal states. 
 		horizontalCheck = self.__checkHorizontal()
 		if horizontalCheck[0]:
-			print "Found a horizontal goal state!"
+			#print "Found a horizontal goal state!"
 			return horizontalCheck
 		verticalCheck = self.__checkVertical()
 		if verticalCheck[0]:
-			print "Found a vertical goal state!"
+			#print "Found a vertical goal state!"
 			return verticalCheck
 		diagonalCheck = self.__checkDiagonal()
 		if diagonalCheck[0]:
-			print "Found a diagonal goal state!"
+			#print "Found a diagonal goal state!"
 			return diagonalCheck
 
 		return [False, Marking.Empty]
@@ -174,10 +174,10 @@ class State:
 
 				if not stoppedCheckingColumn:
 					if numUser == 4:
-						print "User wins in column ", colIndex
+						#print "User wins in column ", colIndex
 						return [True, Marking.User]
 					elif numComp == 4:
-						print "Computer wins in column", colIndex
+						#print "Computer wins in column", colIndex
 						return [True, Marking.Computer]
 
 				rowIndex -= 1

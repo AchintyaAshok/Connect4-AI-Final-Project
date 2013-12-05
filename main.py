@@ -323,71 +323,16 @@ def utility2(state):
 def main():
 	s = State()
 	print s
+
+	play_game()
+
 	# s.addMarking(Marking.Computer, 0, 0)
 	# s.addMarking(Marking.Computer, 1, 0)
 	# s.addMarking(Marking.User, 2, 0)
 	# s.addMarking(Marking.User, 3, 0)
 	# s.addMarking(Marking.Computer, 4, 0)
 	# s.addMarking(Marking.Computer, 0, 1)
-	# s.addMarking(Marking.Computer, 1, 1)
-	# s.addMarking(Marking.Computer, 2, 1)
-	# s.addMarking(Marking.Computer, 4, 1)
-	# s.addMarking(Marking.Computer, 0, 3)
-	#print s
-	#utility(s)
-	s.addMarking(Marking.Computer, 0, 0)
-	s.addMarking(Marking.Computer, 1, 0)
-	s.addMarking(Marking.User, 2, 0)
-	s.addMarking(Marking.User, 3, 0)
-	s.addMarking(Marking.Computer, 4, 0)
-	s.addMarking(Marking.Computer, 0, 1)
-	s.addMarking(Marking.User, 3, 3)
-	play_game()
-
-	# s2 = State()
-	# print s2
-	# s2.addMarking(Marking.Computer, 0, 0)
-	# s2.addMarking(Marking.Computer, 1, 0)
-	# s2.addMarking(Marking.Computer, 3, 0)
-	# s2.addMarking(Marking.Computer, 4, 0)
-	# print s2
-	# utility(s2)
-
+	# s.addMarking(Marking.User, 3, 3)
 	# play_game()
-	# newState = State()
-	# print newState
-
-	# -- testing horizontal check
-	# newState.addMarking(Marking.Computer, 0, 0)
-	# newState.addMarking(Marking.User, 1, 0)
-	# newState.addMarking(Marking.User, 2, 0)
-	# newState.addMarking(Marking.User, 3, 0)
-	# newState.addMarking(Marking.User, 4, 0)
-
-	# -- testing vertical check
-	# newState.addMarking(Marking.User, 0, 0)
-	# newState.addMarking(Marking.User, 0, 1)
-	# newState.addMarking(Marking.User, 0, 2)
-	# newState.addMarking(Marking.User, 0, 3)
-
-	# Testing Diagonals 1
-	# newState.addMarking(Marking.User, 0, 0)
-	# newState.addMarking(Marking.User, 1, 1)
-	# newState.addMarking(Marking.User, 2, 2)
-	# newState.addMarking(Marking.User, 3, 3)
-	# newState.addMarking(Marking.Computer, 0, 3)
-	# newState.addMarking(Marking.Computer, 1, 2)
-	# newState.addMarking(Marking.Computer, 2, 1)
-	# newState.addMarking(Marking.Computer, 3, 0)
-
-	# Testing Diagonals 2
-	# newState.addMarking(Marking.User, 0, 0)
-	# newState.addMarking(Marking.User, 1, 1)
-	# newState.addMarking(Marking.User, 3, 1)
-	# newState.addMarking(Marking.Computer, 1, 0)
-	# newState.addMarking(Marking.Computer, 2, 0)
-	# newState.addMarking(Marking.Computer, 4, 3)
-	# newState.checkForGoalState()
-	# print newState
 
 main()	
