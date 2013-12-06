@@ -268,6 +268,14 @@ class State:
 		for rowIndex in range(NUM_ROWS - 1, -1, -1):
 			rowStr = str(self.matrix[rowIndex])
 			board += str(rowIndex) + " " + rowStr + "\n"
+
+		xIndexStr = "   "
+		prefix = ""
+		for i in range(NUM_COLUMNS):
+			xIndexStr += prefix + " " + str(i) + " "
+			prefix = "  "
+		xIndexStr += " "
+		board += xIndexStr	
 		return board
 
 

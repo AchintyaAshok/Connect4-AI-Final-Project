@@ -11,8 +11,10 @@ class ComputerPlayer:
 		print "Constructing the AI!"
 		self.maxPlayer = Marking.Computer	# we are trying to maximize the utility of the computer
 		self.minPlayer = Marking.User
-		self.maxComputationDepth = 4
+		self.maxComputationDepth = 5
 		self.movesCalculated = 0
+		self.statesChecked = dict()	# we keep track of all the states we've previously checked so that
+									# we do not need to traverse far down the tree in future moves
 
 	''' This method make the computer calculate a move that it wishes to perform_move
 	given a board configuration. The method returns the next state of the board once the
@@ -20,50 +22,67 @@ class ComputerPlayer:
 	def perform_move(self, currentState):
 		state = copy.deepcopy(currentState) # do not modify the original state
 		print "Old Utility: ", self.__getUtility(state)
-		bestMove = self.__minimaxDecision(state)
+		bestMove = self.__minimaxDecision(state, self.statesChecked)
 		state.addMarkingWithHash(Marking.Computer, bestMove)
 		print "New Utility: ", self.__getUtility(state)
+		print "States kept track of: ", len(self.statesChecked) 
 		return state
 
 	''' Given an initial state of the board configuration, this computes the action (a 
 	x,y coordinate pair) that the AI will perform. This method returns a tuple of the 
 	desired coordinate pair. This method will use the minimax algorithm to compute the decision.
 	If alpha and beta values are provided, it will compute a decision using the alpha-beta algorithm.'''
-	def __minimaxDecision(self, initialState):
+	def __minimaxDecision(self, initialState, stateCheckMap):
 		# return the best move we can make assuming the opponent is minimizing your utility:
 		# apply all the actions to the state, return the one that gives you the highest utility
+		alpha = sys.maxint * -1
+		beta = sys.maxint
 		self.movesCalculated = 0
 		playableMoves = initialState.getAllPossibleMoves()
 		bestMove = None
 		highestUtil = -1 * sys.maxint
+
+		# we could also keep a check for all state configurations that have been checked so that
+		# states are not repeatedly checked multiple times. The only drawback is memory. However,
+		# in our case, this is minimal
+		# we do this by finding a unique key for each possible state,
+		# the simplest idea is to stringify all the rows as a unique key. Then we insert it into a map
+		# Thus, before we compute the min/max of a state, we skip it if it has been checked and return its utility
+		
+		# min/max value -- MEMOIZATION -- cache our results for better computational performance in the StateCheckMap
+
 		for move in playableMoves:
-			#self.movesCalculated += 1
+			self.movesCalculated += 1
 			nextPossibleState = copy.deepcopy(initialState)
 			nextPossibleState.addMarkingWithHash(Marking.Computer, move)	# the computer is the max player
-			currUtil = self.__minimum(nextPossibleState, 0, sys.maxint * -1, sys.maxint)
-			#currUtil = self.__minimum(nextPossibleState, 0)
+			currUtil = self.__minimum(nextPossibleState, 0, stateCheckMap, alpha, beta)
 			if currUtil > highestUtil:
+				alpha = max(currUtil, alpha)
 				bestMove = move
 				highestUtil = currUtil
-
+		print "Total States Checked: ", self.movesCalculated
 		return bestMove
 
-	def __minimum(self, state, depth, alpha = None, beta = None):
+	def __minimum(self, state, depth, stateDict, alpha = None, beta = None):
 		#print "l:", depth, "move: ", self.movesCalculated
+		hashKey = self.__hashState(state.getMatrix())
+		if hashKey in stateDict:
+			# if we've already computed the utility for this state, we just return what we've found
+			return stateDict[hashKey]
+
 		if depth + 1 > self.maxComputationDepth:
-			return self.__getUtility(state)
-		if self.movesCalculated == 50000:
-			self.movesCalculated -= 1
 			return self.__getUtility(state)
 
 		goalCheck = state.checkForGoalState()
-		# terminal test
 		if goalCheck[0]:
 			if goalCheck[1] == Marking.Computer:
+				stateDict[hashKey] = sys.maxint 		# update our hash with this state's possible utility
 				return sys.maxint
 			elif goalCheck[1] == Marking.User:
-				return -1*sys.maxint
+				stateDict[hashKey] = sys.maxint * -1 	# update our hash with this state's possible utility
+				return -1 * sys.maxint
 			else:
+				stateDict[hashKey] = 0
 				return 0
 
 		v = sys.maxint
@@ -75,31 +94,35 @@ class ComputerPlayer:
 				print "Moves Calculated ->", self.movesCalculated
 			newState = copy.deepcopy(state)
 			newState.addMarkingWithHash(self.minPlayer, move)	# perform the move for the min player, the user
-			util = self.__maximum(newState, depth + 1, alpha, beta)
+			util = self.__maximum(newState, depth + 1, stateDict, alpha, beta)
 			if alpha is not None and util < alpha:
-				v = util
-				#print "min::pruning tree"
+				v = min(v, util)
+				stateDict[hashKey] = v 	# update our hash with this state's possible utility
 				return v
 			if util < v:	
 				v = util
 			if beta is not None:	beta = min(beta, v)
 
+		stateDict[hashKey] = v 			# update our hash with this state's possible utility
 		return v
 
-	def __maximum(self, state, depth, alpha = None, beta = None):
+	def __maximum(self, state, depth, stateDict, alpha = None, beta = None):
 		#print "h:", depth, "move: ", self.movesCalculated
+		hashKey = self.__hashState(state.getMatrix())
+		if hashKey in stateDict:
+			# if we've already calculated how much utility we can get from this state, we return that number
+			return stateDict[hashKey]
+
 		if depth + 1 > self.maxComputationDepth:
-			return self.__getUtility(state)
-		if self.movesCalculated == 50000:
-			self.movesCalculated -= 1
 			return self.__getUtility(state)
 
 		goalCheck = state.checkForGoalState()
-		# terminal test
 		if goalCheck[0]:
 			if goalCheck[1] == Marking.Computer:
+				stateDict[hashKey] = sys.maxint 	# update our hash with this state's possible utility
 				return sys.maxint
 			elif goalCheck[1] == Marking.User:
+				stateDict[hashKey] = sys.maxint * -1 # update our hash with this state's possible utility
 				return -1*sys.maxint
 			else:
 				return 0
@@ -113,16 +136,24 @@ class ComputerPlayer:
 				print "Moves Calculated ->", self.movesCalculated
 			newState = copy.deepcopy(state)
 			newState.addMarkingWithHash(self.maxPlayer, move)	# perform the move for the computer
-			util = self.__minimum(newState, depth + 1, alpha, beta)
+			util = self.__minimum(newState, depth + 1, stateDict, alpha, beta)
 			if beta is not None and util > beta:
-				v = util
-				#print "max::pruning tree"
+				v = max(v, util)
+				stateDict[hashKey] = v 		# update our hash with this state's possible utility
 				return v
 			if util > v:	
 				v = util
 			if alpha is not None:	alpha = max(alpha, v)
 
+		stateDict[hashKey] = v 				# update our hash with this state's possible utility
 		return v
+
+	def __hashState(self, matrix):
+		key = ""
+		for row in matrix:
+			key += str(row)
+		return key
+
 
 	''' This method returns the utility from the perspective of the computer, given a state. 
 	The utility for a terminal winning state is +infinity. The utility for a losing terminal state

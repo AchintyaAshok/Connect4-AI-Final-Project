@@ -8,11 +8,18 @@ the user gives valid input for the given board configuration. '''
 def get_user_input():
 	user_input = []
 	while(True):
-		x = int(raw_input("Welcome. Please give an x position for the move you desire to make:\t"))
-		y = int(raw_input("Give the y position for the move you desire to make:\t"))
+		xVal = raw_input("X Position:\t")
+		yVal = raw_input("Y Position:\t")
+		try:
+			x = int(xVal)
+			y = int(yVal)
+		except:
+			print "Please enter integer values for x and y."
+			continue
 		if x not in range(NUM_COLUMNS) or y not in range(NUM_ROWS):
-			print "Incorrect Input. Please make sure your X value is in the range: 0 .. ", (NUM_COLUMNS-1)
-			print "Please make sure your Y value is in the range: 0 .. ", (NUM_ROWS-1)
+			print "Invalid Values!"
+			print "X has to be in the range: 0 .. ", (NUM_COLUMNS-1)
+			print "Y has to be in the range: 0 .. ", (NUM_ROWS-1)
 		else:	
 			user_input = {"x": x, "y": y}
 			return user_input
@@ -46,7 +53,7 @@ def play_game():
 	states.append(currentState)
 
 	comp = ComputerPlayer()
-
+	print "Welcome to Connect 4! I hope you lose."
 	while(True):
 		print "=== Round ", numberOfMoves, " ==="
 		print currentState
@@ -321,9 +328,8 @@ def utility2(state):
 
 
 def main():
-	s = State()
-	print s
-
+	#s = State()
+	#print s
 	play_game()
 
 	# s.addMarking(Marking.Computer, 0, 0)
