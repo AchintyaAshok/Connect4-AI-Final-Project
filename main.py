@@ -14,7 +14,7 @@ def get_user_input():
 			x = int(xVal)
 			y = int(yVal)
 		except:
-			print "Please enter integer values for x and y."
+			print "Please enter numbers for x and y."
 			continue
 		if x not in range(NUM_COLUMNS) or y not in range(NUM_ROWS):
 			print "Invalid Values!"
@@ -78,19 +78,12 @@ def play_game():
 		else:
 			# it is the computer's turn. We simulate the computer's choice of move
 			print "--COMPUTER TURN--"
-			# DO SOMETHING
 			nextState = comp.perform_move(currentState)
 			states.append(nextState)
 			currentState = nextState
 			isUserTurn = True
 
 		numberOfMoves += 1
-		# control-test, remove this 
-		#if numberOfMoves > 4: break
-
-	# print "States in Succession:\n"
-	# for i in range(len(states)):
-	# 	print (i+1), "->\n", states[i]
 
 
 def utility(state):
@@ -328,10 +321,10 @@ def utility2(state):
 
 
 def main():
-	#s = State()
-	#print s
 	play_game()
 
+	#s = State()
+	#print s
 	# s.addMarking(Marking.Computer, 0, 0)
 	# s.addMarking(Marking.Computer, 1, 0)
 	# s.addMarking(Marking.User, 2, 0)

@@ -1,14 +1,14 @@
 import copy
 from enum import Enum
 
-# NUM_ROWS = 4
-# NUM_COLUMNS = 4
+# NUM_ROWS = 5
+# NUM_COLUMNS = 5
 NUM_ROWS = 4
 NUM_COLUMNS = 5
 
 class Marking(Enum):
-	User = 'X'
-	Computer = 'O'
+	User = 'O'
+	Computer = 'X'
 	Empty = '_'
 
 class State:

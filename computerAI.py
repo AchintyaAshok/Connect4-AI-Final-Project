@@ -2,6 +2,7 @@ from state import *
 import copy
 import sys
 import random
+import time
 
 
 class ComputerPlayer:
@@ -11,7 +12,7 @@ class ComputerPlayer:
 		print "Constructing the AI!"
 		self.maxPlayer = Marking.Computer	# we are trying to maximize the utility of the computer
 		self.minPlayer = Marking.User
-		self.maxComputationDepth = 5
+		self.maxComputationDepth = 4
 		self.movesCalculated = 0
 		self.statesChecked = dict()	# we keep track of all the states we've previously checked so that
 									# we do not need to traverse far down the tree in future moves
@@ -22,10 +23,14 @@ class ComputerPlayer:
 	def perform_move(self, currentState):
 		state = copy.deepcopy(currentState) # do not modify the original state
 		print "Old Utility: ", self.__getUtility(state)
+		startTime = time.time()
 		bestMove = self.__minimaxDecision(state, self.statesChecked)
+		endTime = time.time()
 		state.addMarkingWithHash(Marking.Computer, bestMove)
 		print "New Utility: ", self.__getUtility(state)
-		print "States kept track of: ", len(self.statesChecked) 
+		print "States kept track of: ", len(self.statesChecked)
+		print "Time for decision: ", str(endTime - startTime), " secs"
+		print "Computer chose to play -> (", bestMove['x'], ", ", bestMove['y'], ")" 
 		return state
 
 	''' Given an initial state of the board configuration, this computes the action (a 
