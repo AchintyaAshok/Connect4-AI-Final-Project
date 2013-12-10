@@ -15,7 +15,7 @@ class ComputerPlayer:
 		self.maxComputationDepth = 4
 		self.movesCalculated = 0
 		self.statesChecked = dict()	# we keep track of all the states we've previously checked so that
-									# we do not need to traverse far down the tree in future moves
+									# we do not need to traverse far down the tree in future moves. Caching.
 
 	''' This method make the computer calculate a move that it wishes to perform_move
 	given a board configuration. The method returns the next state of the board once the
@@ -61,15 +61,15 @@ class ComputerPlayer:
 			nextPossibleState = copy.deepcopy(initialState)
 			nextPossibleState.addMarkingWithHash(Marking.Computer, move)	# the computer is the max player
 			currUtil = self.__minimum(nextPossibleState, 0, stateCheckMap, alpha, beta)
-			if currUtil > highestUtil:
+			if currUtil >= highestUtil:
 				alpha = max(currUtil, alpha)
 				bestMove = move
 				highestUtil = currUtil
 		print "Total States Checked: ", self.movesCalculated
+
 		return bestMove
 
 	def __minimum(self, state, depth, stateDict, alpha = None, beta = None):
-		#print "l:", depth, "move: ", self.movesCalculated
 		hashKey = self.__hashState(state.getMatrix())
 		if hashKey in stateDict:
 			# if we've already computed the utility for this state, we just return what we've found
@@ -112,7 +112,6 @@ class ComputerPlayer:
 		return v
 
 	def __maximum(self, state, depth, stateDict, alpha = None, beta = None):
-		#print "h:", depth, "move: ", self.movesCalculated
 		hashKey = self.__hashState(state.getMatrix())
 		if hashKey in stateDict:
 			# if we've already calculated how much utility we can get from this state, we return that number
@@ -287,7 +286,6 @@ class ComputerPlayer:
 				# move our left pointer rightwards and our right pointer leftwards in the row
 				stoppedCheckingLeft = stoppedCheckingRight = False # if we have X and O in our diagonal, don't count it
 				numUserLeft = numUserRight = numCompLeft = numCompRight = 0	# number of X's and O's in the diagonals
-				#print "starting at row ", rowInd, "left column => ", leftPtr, "right column => ", rightPtr
 				for i in range(4):
 					leftYPos = rowInd - i
 					rightYPos = rowInd - i
@@ -320,31 +318,24 @@ class ComputerPlayer:
 						else:
 							numUserRight += 1
 
-					#print "Left Elem: ", leftElem, "Right Elem: ", rightElem
-
 					if stoppedCheckingLeft and stoppedCheckingRight:	break	# if we're checking neither loop, stop
 				
 				if not stoppedCheckingLeft:
-					#print "adding some left thing!"
 					if numCompLeft > 0:		numConsecutive[numCompLeft - 1] += 1
 					elif numUserLeft > 0:	numConsecutiveUser[numUserLeft - 1] += 1
 				if not stoppedCheckingRight:
-					#print "adding some right thing!"
 					if numCompRight > 0:	numConsecutive[numCompRight - 1] += 1
 					elif numUserRight > 0:	numConsecutiveUser[numUserRight - 1] += 1
 
 				leftPtr += 1
 				rightPtr -= 1
-
-
 			# colInd gets incremented, and we check the next column. The bottom and top pointers are reset
 			
 
-		# now we calculate our utility using our evaluation function
+		# now we calculate our utility using our evaluation function that we stated above.
 		stateUtil = 0
 		for i in range(len(numConsecutive)):
 			stateUtil += (i+1) * numConsecutive[i]
 			stateUtil -= (i+1) * numConsecutiveUser[i]
-
-		#print "Utility of State", stateUtil
+			
 		return stateUtil

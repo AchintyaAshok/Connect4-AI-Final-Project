@@ -1,8 +1,6 @@
 import copy
 from enum import Enum
 
-# NUM_ROWS = 5
-# NUM_COLUMNS = 5
 NUM_ROWS = 4
 NUM_COLUMNS = 5
 
@@ -41,6 +39,8 @@ class State:
 		newState = State()
 		newState.matrix = copy.deepcopy(self.matrix)
 		newState.possibleMoves = self.possibleMoves
+		newState.numRows = self.numRows
+		newState.numColumns = self.numColumns
 		return newState
 
 	''' checks the position indexed by (x, y). If the position is out of range, the 
@@ -100,21 +100,17 @@ class State:
 		# we need to check for horizontal, diagonal and vertical goal states. 
 		horizontalCheck = self.__checkHorizontal()
 		if horizontalCheck[0]:
-			#print "Found a horizontal goal state!"
 			return horizontalCheck
 		verticalCheck = self.__checkVertical()
 		if verticalCheck[0]:
-			#print "Found a vertical goal state!"
 			return verticalCheck
 		diagonalCheck = self.__checkDiagonal()
 		if diagonalCheck[0]:
-			#print "Found a diagonal goal state!"
 			return diagonalCheck
 
 		return [False, Marking.Empty]
 
 	def __checkHorizontal(self):
-		#print "checking horizontal"
 		numbX = 0 # keep track of the number of consecutives X's
 		numbO = 0 # number of consecutives O's
 		for row in self.matrix:
@@ -128,24 +124,18 @@ class State:
 					numbX = 0
 				else:
 					numbO = numbX = 0
-				#print "numb-x: " + str(numbX) + "\tnumb-o: " + str(numbO)
 	
 				# now check if numbO or numbX indicate 4 in a row were found
 				if numbX == 4:
-					#print "found 4 X's in a row"
 					return [True, Marking.User]
 				elif numbO == 4:
-					#print "found 4 O's in a row"
 					return [True, Marking.Computer]
 
-			# reset the values for the next row
-			numbX = numbO = 0
+			numbX = numbO = 0	# reset the values for the next row
 
 		return [False, Marking.Empty]	# no four in a row were found
 
 	def __checkVertical(self):
-		#print "checking vertical"
-		# check each column vector
 		for colIndex in range(self.numColumns):
 			rowIndex = self.numRows - 1
 			if rowIndex < 3:	break
@@ -174,10 +164,8 @@ class State:
 
 				if not stoppedCheckingColumn:
 					if numUser == 4:
-						#print "User wins in column ", colIndex
 						return [True, Marking.User]
 					elif numComp == 4:
-						#print "Computer wins in column", colIndex
 						return [True, Marking.Computer]
 
 				rowIndex -= 1
@@ -208,7 +196,6 @@ class State:
 				localY = yPosition
 				mark = self.getMarking(localX, localY)
 				while(mark):
-					#print "LEFT loc-x: " + str(localX) + " loc-y: " + str(localY) + " mark: " + str(mark)
 					if mark == Marking.User:
 						numbXLeft += 1
 						numbOLeft = 0
@@ -221,7 +208,6 @@ class State:
 					if numbXLeft >= 4: return [True, Marking.User]
 					if numbOLeft >= 4: return [True, Marking.Computer]
 
-					#print "Diag from left -- numb-x: " + str(numbXLeft) + "\tnumb-o: " + str(numbOLeft)
 					# traverse right -> x+1 and down -> y-1 to the next cell
 					localX += 1 
 					localY -= 1
@@ -233,7 +219,6 @@ class State:
 				localY = yPosition
 				mark = self.getMarking(localX, localY)
 				while(mark):
-					#print "RIGHT loc-x: " + str(localX) + " loc-y: " + str(localY) + " mark: " + str(mark)
 					mark = self.getMarking(localX, localY)
 					if mark == Marking.User:
 						numbXRight += 1
@@ -244,7 +229,6 @@ class State:
 					else:
 						numbXRight = numbORight = 0
 
-					#print "Diag from right -- numb-x: " + str(numbXRight) + "\tnumb-o: " + str(numbORight)
 					if numbXRight >= 4: return [True, Marking.User]
 					if numbORight >= 4: return [True, Marking.Computer]
 
