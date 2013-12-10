@@ -51,7 +51,7 @@ def play_game():
 	isUserTurn = True # keep track of whose turn it is
 	states = []	
 	states.append(currentState)
-
+	print "Welcome to Connect 4! You win the game by getting 4 in a row in any direction."
 	print "You can choose a difficulty for your computer opponent. Pick (1, 2, 3) from easiest to hardest."
 	print "Be careful! A smarter opponent will think farther ahead than you (and take more time to do so)! Choose Wisely"
 	difficulty = 0
@@ -67,7 +67,19 @@ def play_game():
 			print "Choose a number value between 1 and 3!"
 
 	comp = ComputerPlayer(difficulty)
-	print "Welcome to Connect 4! You win the game by getting 4 in a row in any direction."
+	while(True):
+		choice = raw_input("Do you want to play first? y or n:	")
+		if choice in ['y', 'Y']:
+			print "You chose to go first."
+			isUserTurn = True
+			break
+		elif choice in ['n', 'N']:
+			print "Computer goes first."
+			isUserTurn = False
+			break
+		else:
+			print "Invalid Choice."
+
 	while(True):
 		print "=== Round ", numberOfMoves, " ==="
 		print currentState

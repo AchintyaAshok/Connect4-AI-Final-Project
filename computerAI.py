@@ -14,6 +14,12 @@ class ComputerPlayer:
 		self.minPlayer = Marking.User
 		# our computational depth is dependent on the difficulty that is chosen. A higher difficulty will 
 		# result in the computer thinking more moves ahead.
+		if difficulty is 1:
+			difficulty = random.randint(0, 2)
+		elif difficulty is 2:
+			difficulty = random.randint(2, 4)
+		elif difficulty is 3:
+			difficulty = random.randint(3, 5)
 		self.maxComputationDepth = difficulty
 		self.movesCalculated = 0
 		self.statesChecked = dict()	# we keep track of all the states we've previously checked so that
@@ -156,6 +162,7 @@ class ComputerPlayer:
 		stateDict[hashKey] = v 				# update our hash with this state's possible utility
 		return v
 
+
 	''' Generates a hash key given a matrix. This is done by stringifying the matrix. '''
 	def __hashState(self, matrix):
 		key = ""
@@ -177,7 +184,8 @@ class ComputerPlayer:
 
 	For example, X O O O _ X -> in this row, we can place another O to win the game.
 	If it is like this, O O O X X X, there is no purpose in counting the 3 O's, there is no way to win.
-	Returns a Utility value for a state from the Computer's Perspective
+	
+	The method returns a Utility value for a state from the Computer's Perspective.
 	'''
 	def __getUtility(self, state):
 		ended = state.checkForGoalState()
