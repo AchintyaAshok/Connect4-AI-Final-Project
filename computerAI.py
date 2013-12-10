@@ -8,11 +8,13 @@ import time
 class ComputerPlayer:
 	''' This is the Computer AI ''' 
 
-	def __init__(self):
+	def __init__(self, difficulty = 2):
 		print "Constructing the AI!"
 		self.maxPlayer = Marking.Computer	# we are trying to maximize the utility of the computer
 		self.minPlayer = Marking.User
-		self.maxComputationDepth = 4
+		# our computational depth is dependent on the difficulty that is chosen. A higher difficulty will 
+		# result in the computer thinking more moves ahead.
+		self.maxComputationDepth = difficulty
 		self.movesCalculated = 0
 		self.statesChecked = dict()	# we keep track of all the states we've previously checked so that
 									# we do not need to traverse far down the tree in future moves. Caching.
@@ -69,6 +71,7 @@ class ComputerPlayer:
 
 		return bestMove
 
+	''' Computes the minimum of a subtree of nodes generated from the state. '''
 	def __minimum(self, state, depth, stateDict, alpha = None, beta = None):
 		hashKey = self.__hashState(state.getMatrix())
 		if hashKey in stateDict:
@@ -111,6 +114,7 @@ class ComputerPlayer:
 		stateDict[hashKey] = v 			# update our hash with this state's possible utility
 		return v
 
+	''' Computes the maximum of the subtree of nodes generated from the state. '''
 	def __maximum(self, state, depth, stateDict, alpha = None, beta = None):
 		hashKey = self.__hashState(state.getMatrix())
 		if hashKey in stateDict:
@@ -152,6 +156,7 @@ class ComputerPlayer:
 		stateDict[hashKey] = v 				# update our hash with this state's possible utility
 		return v
 
+	''' Generates a hash key given a matrix. This is done by stringifying the matrix. '''
 	def __hashState(self, matrix):
 		key = ""
 		for row in matrix:
@@ -337,5 +342,5 @@ class ComputerPlayer:
 		for i in range(len(numConsecutive)):
 			stateUtil += (i+1) * numConsecutive[i]
 			stateUtil -= (i+1) * numConsecutiveUser[i]
-			
+
 		return stateUtil

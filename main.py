@@ -52,7 +52,21 @@ def play_game():
 	states = []	
 	states.append(currentState)
 
-	comp = ComputerPlayer()
+	print "You can choose a difficulty for your computer opponent. Pick (1, 2, 3) from easiest to hardest."
+	print "Be careful! A smarter opponent will think farther ahead than you (and take more time to do so)! Choose Wisely"
+	difficulty = 0
+	while(True):
+		difficulty = raw_input("Difficulty: ")
+		try:
+			difficulty = int(difficulty)
+			if difficulty not in [1, 2, 3]:
+				print "Please pick difficulty between 1 and 3!"
+				continue
+			break
+		except:
+			print "Choose a number value between 1 and 3!"
+
+	comp = ComputerPlayer(difficulty)
 	print "Welcome to Connect 4! You win the game by getting 4 in a row in any direction."
 	while(True):
 		print "=== Round ", numberOfMoves, " ==="
